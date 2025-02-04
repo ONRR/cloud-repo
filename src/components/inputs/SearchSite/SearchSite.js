@@ -93,6 +93,7 @@ const SearchSite = props => {
             focused: classes.inputFocused
           }}
           placeholder="Search..."
+          maxlength="30"
           name="q"
           role="search"
           endAdornment={

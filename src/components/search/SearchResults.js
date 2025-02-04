@@ -3,6 +3,7 @@ import { useStaticQuery, graphql } from 'gatsby'
 import Link from '../Link'
 import { Index } from 'elasticlunr'
 import 'url-search-params-polyfill' // Temporary polyfill for EdgeHTML 14-16
+import { EscapeHtml, NormalizeWhitespace, RemoveSearchCharacters } from '../utils/InputSanitizer'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
@@ -51,7 +52,13 @@ export const SearchResults = () => {
   if (typeof window !== 'undefined' && window) {
     urlParams = new URLSearchParams(window.location.search)
   }
-  const queryString = urlParams.get('q')
+  let queryString = urlParams.get('q')
+  console.log(queryString)
+  queryString = EscapeHtml(queryString)
+  queryString = NormalizeWhitespace(queryString)
+  queryString = RemoveSearchCharacters(queryString)
+  console.log(queryString)
+
   const [results] = useState(index
     .search(queryString, {})
     // Map over each ID and return the full document
