@@ -83,10 +83,11 @@ const SearchSite = props => {
     searchPath = withPrefix(searchPath)
   }
 
-  const handleSearchInputChange = (event) => {
+  const handleSearchInputChange = event => {
     setSearchTerm(event.target.value)
   }
-  const handleSubmit = (event) => {
+
+  const handleSubmit = event => {
     event.preventDefault();
 
     let st = NormalizeWhitespace(searchTerm)
@@ -97,8 +98,8 @@ const SearchSite = props => {
 
     const form = event.target
     const url = new URL(form.action)
-    url.searchParams.set('q', st);
-    window.location.href = url.toString();
+    url.searchParams.set('q', st)
+    window.location.href = url.toString()
 
     setSearchTerm('')
   }

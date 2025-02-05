@@ -75,7 +75,7 @@ export const SearchResults = () => {
   }, [])
 
   if (isSearchTermInvalid === null) {
-    return (<></>);
+    return (<></>)
   }
 
   return (

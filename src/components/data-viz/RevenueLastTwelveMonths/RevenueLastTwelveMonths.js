@@ -11,7 +11,6 @@ import withStyles from '@material-ui/styles/withStyles'
 
 import withQueryManager from '../../withQueryManager'
 import { QK_REVENUE_COMMON, SOURCE, COMMODITY, DISPLAY_NAMES } from '../../../constants'
-import { max } from 'lodash'
 
 /**
  * This displays data related to the Revenue for the last 12 months
