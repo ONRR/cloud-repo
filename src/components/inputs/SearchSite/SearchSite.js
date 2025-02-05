@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { withPrefix } from 'gatsby'
 
 import { makeStyles } from '@material-ui/core/styles'
@@ -6,8 +6,9 @@ import {
   InputAdornment,
   OutlinedInput
 } from '@material-ui/core'
-// import CloseOutlinedIcon from '@material-ui/icons/CloseOutlined';
+
 import SearchIcon from '@material-ui/icons/Search'
+import { IsTermInvalid, NormalizeWhitespace } from '../../utils/InputSanitizer'
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -69,6 +70,8 @@ const useStyles = makeStyles(theme => ({
 const SearchSite = props => {
   const classes = useStyles()
 
+  const [searchTerm, setSearchTerm] = useState('')
+
   let searchPath = '/search-results/'
 
   // eslint-disable-next-line no-undef
@@ -80,9 +83,29 @@ const SearchSite = props => {
     searchPath = withPrefix(searchPath)
   }
 
+  const handleSearchInputChange = (event) => {
+    setSearchTerm(event.target.value)
+  }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    let st = NormalizeWhitespace(searchTerm)
+
+    if (IsTermInvalid(st)) {
+      st = 'invalid-search'
+    }
+
+    const form = event.target
+    const url = new URL(form.action)
+    url.searchParams.set('q', st);
+    window.location.href = url.toString();
+
+    setSearchTerm('')
+  }
+
   return (
     <>
-      <form action={searchPath} className={classes.root}>
+      <form action={searchPath} className={classes.root} onSubmit={handleSubmit}>
         <OutlinedInput
           id="search-input"
           margin="dense"
@@ -96,6 +119,7 @@ const SearchSite = props => {
           maxlength="30"
           name="q"
           role="search"
+          onChange={handleSearchInputChange}
           endAdornment={
             <InputAdornment position="end">
               <SearchIcon className={classes.searchIcon} />

@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useStaticQuery, graphql } from 'gatsby'
 import Link from '../Link'
 import { Index } from 'elasticlunr'
 import 'url-search-params-polyfill' // Temporary polyfill for EdgeHTML 14-16
-import { EscapeHtml, NormalizeWhitespace, RemoveSearchCharacters } from '../utils/InputSanitizer'
+import { IsTermInvalid, NormalizeWhitespace } from '../utils/InputSanitizer'
 
 import { makeStyles } from '@material-ui/core/styles'
 import Container from '@material-ui/core/Container'
@@ -47,25 +47,36 @@ export const SearchResults = () => {
   )
 
   const index = Index.load(data.siteSearchIndex.index)
-  console.log(index)
   let urlParams = new URLSearchParams()
   if (typeof window !== 'undefined' && window) {
     urlParams = new URLSearchParams(window.location.search)
   }
-  let queryString = urlParams.get('q')
-  console.log(queryString)
-  queryString = EscapeHtml(queryString)
-  queryString = NormalizeWhitespace(queryString)
-  queryString = RemoveSearchCharacters(queryString)
-  console.log(queryString)
+  const queryString = urlParams.get('q')
 
-  const [results] = useState(index
-    .search(queryString, {})
-    // Map over each ID and return the full document
-    .map(({ ref }) => index.documentStore.getDoc(ref))
-  )
+  const [results, setResults] = useState(null)
+  const [isSearchTermInvalid, setIsSearchTermInvalid] = useState(null)
 
-  // console.log('SearchResults results: ', results)
+  useEffect(() => {
+    if (queryString === 'invalid-search') {
+      setIsSearchTermInvalid(true)
+    }
+    else {
+      setIsSearchTermInvalid(IsTermInvalid(NormalizeWhitespace(queryString)))
+    }
+
+    if (!isSearchTermInvalid) {
+      const searchResults = index
+        .search(queryString, {})
+        // Map over each ID and return the full document
+        .map(({ ref }) => index.documentStore.getDoc(ref))
+
+      setResults(searchResults)
+    }
+  }, [])
+
+  if (isSearchTermInvalid === null) {
+    return (<></>);
+  }
 
   return (
     <>
@@ -74,18 +85,22 @@ export const SearchResults = () => {
           <Typography variant="h1" id="introduction" className={classes.title}>Search Results</Typography>
           <div className={classes.searchResultsContainer}>
             <article>
-              <ul>
-                {results.length > 0
-                  ? results.map((item, index) => {
-                    if (item.path !== '/glossary/') {
-                      return <li key={ index }><Link href={ item.path } linkType="default">{ item.title }</Link></li>
-                    }
-                    else {
-                      return <GlossaryResult item={item} queryString={queryString} index={index} />
-                    }
-                  }) : <p><strong>We didn't find any search results for " {queryString} ".</strong></p>
-                }
-              </ul>
+              {isSearchTermInvalid ? (
+                <p><strong>Invalid Search: use only alphanumeric characters in your search.</strong></p>
+              ) : (
+                <ul>
+                  {results.length > 0
+                    ? results.map((item, index) => {
+                      if (item.path !== '/glossary/') {
+                        return <li key={ index }><Link href={ item.path } linkType="default">{ item.title }</Link></li>
+                      }
+                      else {
+                        return <GlossaryResult item={item} queryString={queryString} index={index} />
+                      }
+                    }) : <p><strong>We didn't find any search results for " {queryString} ".</strong></p>
+                  }
+                </ul>
+              )}
             </article>
           </div>
         </section>
