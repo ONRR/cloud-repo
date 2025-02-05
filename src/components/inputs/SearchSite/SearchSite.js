@@ -88,7 +88,7 @@ const SearchSite = props => {
   }
 
   const handleSubmit = event => {
-    event.preventDefault();
+    event.preventDefault()
 
     let st = NormalizeWhitespace(searchTerm)
 
